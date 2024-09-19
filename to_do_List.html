@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional To-Do List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background:bisque;
+            width: 100%;
+            background-repeat: no-repeat;
+            object-fit: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+            align-content: space-between;
+        }
+        .card {
+            margin-top: 100px;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .task-input {
+            margin: 20px 0;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        .btn-delete {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .task-checkbox {
+            margin-right: 10px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="text-center mb-0">Lord To-Do List</h1>
+            </div>
+            <div class="card-body">
+                <div class="task-input input-group">
+                    <input type="text" id="taskInput" class="form-control" placeholder="Enter new task">
+                    <button class="btn btn-primary" onclick="addTask()">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+                <table id="taskTable" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th width="100">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state">
+                    <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                    <p>Your to-do list is empty. Add some tasks to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskValue = taskInput.value.trim();
+
+            if (taskValue === '') {
+                alert('Please enter a task.');
+                return;
+            }
+
+            const taskList = JSON.parse(localStorage.getItem('tasks')) || [];
+            taskList.push({ text: taskValue, completed: false });
+            localStorage.setItem('tasks', JSON.stringify(taskList));
+
+            taskInput.value = '';
+            renderTasks();
+        }
+
+        function deleteTask(index) {
+            const taskList = JSON.parse(localStorage.getItem('tasks')) || [];
+            taskList.splice(index, 1);
+            localStorage.setItem('tasks', JSON.stringify(taskList));
+            renderTasks();
+        }
+
+        function toggleTask(index) {
+            const taskList = JSON.parse(localStorage.getItem('tasks')) || [];
+            taskList[index].completed = !taskList[index].completed;
+            localStorage.setItem('tasks', JSON.stringify(taskList));
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const taskList = JSON.parse(localStorage.getItem('tasks')) || [];
+            const tableBody = document.querySelector('#taskTable tbody');
+            const emptyState = document.getElementById('emptyState');
+            tableBody.innerHTML = '';
+
+            if (taskList.length === 0) {
+                emptyState.style.display = 'block';
+                document.getElementById('taskTable').style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                document.getElementById('taskTable').style.display = 'table';
+
+                taskList.forEach((task, index) => {
+                    const row = document.createElement('tr');
+
+                    const taskCell = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'task-checkbox';
+                    checkbox.checked = task.completed;
+                    checkbox.onclick = () => toggleTask(index);
+                    
+                    const taskText = document.createElement('span');
+                    taskText.textContent = task.text;
+                    if (task.completed) {
+                        taskText.className = 'completed';
+                    }
+                    
+                    taskCell.appendChild(checkbox);
+                    taskCell.appendChild(taskText);
+                    row.appendChild(taskCell);
+
+                    const actionsCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteButton.className = 'btn btn-danger btn-sm btn-delete';
+                    deleteButton.onclick = () => deleteTask(index);
+                    actionsCell.appendChild(deleteButton);
+                    row.appendChild(actionsCell);
+
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+        renderTasks();
+    </script>
+</body>
+</html>
